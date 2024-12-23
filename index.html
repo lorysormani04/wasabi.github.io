@@ -382,12 +382,23 @@
             }
         }
 
-        function addVehicle() {
+                function addVehicle() {
+            if (!validateVehicleForm()) {
+                return;
+            }
+
             const vehicleClass = document.getElementById('vehicleClass').value;
-            const vehicleName = document.getElementById('vehicleName').value;
-            const vehicleImageUrl = document.getElementById('vehicleImageUrl').value;
-            const vehicleSpecs = document.getElementById('vehicleSpecs').value;
-            const vehiclePrice = document.getElementById('vehiclePrice').value;
+            const vehicleName = document.getElementById('vehicleName').value.trim();
+            const vehicleImageUrl = document.getElementById('vehicleImageUrl').value.trim();
+            const vehicleSpecs = document.getElementById('vehicleSpecs').value.trim();
+            const vehiclePrice = document.getElementById('vehiclePrice').value.trim();
+            const sectionId = vehicleClass.charAt(0).toUpperCase() + vehicleClass.slice(1);
+            const section = document.querySelector(`#${sectionId} .vehicle-carousel`);
+            
+            if (!section) {
+                alert(`Sezione ${sectionId} non trovata!`);
+                return;
+            }
 
             const vehicleCard = document.createElement('div');
             vehicleCard.className = 'vehicle-card';
@@ -395,7 +406,7 @@
             vehicleCard.setAttribute('data-image-url', vehicleImageUrl);
 
             vehicleCard.innerHTML = `
-                <img src="${vehicleImageUrl}" class="vehicle-image" alt="${vehicleName}">
+                <img src="${vehicleImageUrl}" class="vehicle-image" alt="${vehicleName}" onerror="handleImageError(this)">
                 <div class="vehicle-info">
                     <h3>${vehicleName}</h3>
                     <p>${vehicleSpecs}</p>
@@ -403,8 +414,8 @@
                 </div>
             `;
 
-            const section = document.querySelector(`#${vehicleClass} .vehicle-carousel`);
             section.appendChild(vehicleCard);
+            saveVehiclesData();
 
             // Reset form
             document.getElementById('vehicleName').value = '';
@@ -461,38 +472,40 @@
                    url.startsWith('https://media.discordapp.net/');
         }
 
-        // Aggiunta della validazione dell'URL nell'aggiunta del veicolo
+        // Funzione di validazione migliorata
         function validateVehicleForm() {
-            const imageUrl = document.getElementById('vehicleImageUrl').value;
-            const vehicleName = document.getElementById('vehicleName').value;
-
-            if (!isValidDiscordUrl(imageUrl)) {
-                alert('Per favore inserisci un URL valido di Discord per l\'immagine');
-                return false;
-            }
+            const imageUrl = document.getElementById('vehicleImageUrl').value.trim();
+            const vehicleName = document.getElementById('vehicleName').value.trim();
+            const vehicleSpecs = document.getElementById('vehicleSpecs').value.trim();
+            const vehiclePrice = document.getElementById('vehiclePrice').value.trim();
 
             if (!vehicleName) {
                 alert('Per favore inserisci il nome del veicolo');
                 return false;
             }
 
+            if (!isValidDiscordUrl(imageUrl)) {
+                alert('Per favore inserisci un URL valido di Discord per l\'immagine');
+                return false;
+            }
+
+            if (!vehicleSpecs) {
+                alert('Per favore inserisci le specifiche del veicolo');
+                return false;
+            }
+
+            if (!vehiclePrice) {
+                alert('Per favore inserisci il prezzo del veicolo');
+                return false;
+            }
+
             return true;
         }
 
-        // Modifica della funzione addVehicle per includere la validazione
-        document.querySelector('.btn[onclick="addVehicle()"]').onclick = function() {
-            if (!validateVehicleForm()) {
-                return;
-            }
-            addVehicle();
-        };
-
-        // Gestione degli errori di caricamento delle immagini
+        // Gestore errori immagini migliorato
         function handleImageError(img) {
-            img.onerror = function() {
-                this.src = 'DISCORD_DEFAULT_IMAGE_URL_HERE'; // URL di un'immagine di fallback
-                console.error('Errore nel caricamento dell\'immagine:', this.src);
-            };
+            console.error('Errore nel caricamento dell\'immagine:', img.src);
+            img.src = 'https://via.placeholder.com/300x200?text=Immagine+non+disponibile';
         }
 
         // Applicazione del gestore errori a tutte le immagini dei veicoli
@@ -500,20 +513,24 @@
             handleImageError(img);
         });
 
-        // Funzione per salvare i dati dei veicoli nel localStorage
+        // Funzione migliorata per salvare i dati
         function saveVehiclesData() {
             const vehicles = [];
             document.querySelectorAll('.vehicle-card').forEach(card => {
-                vehicles.push({
-                    name: card.getAttribute('data-vehicle-name'),
-                    imageUrl: card.getAttribute('data-image-url'),
-                    specs: card.querySelector('.vehicle-info p').textContent,
-                    price: card.querySelector('.vehicle-info p:last-child').textContent,
-                    category: card.closest('.vehicle-section').id
-                });
+                const section = card.closest('.vehicle-section');
+                if (section) {
+                    vehicles.push({
+                        name: card.getAttribute('data-vehicle-name'),
+                        imageUrl: card.getAttribute('data-image-url'),
+                        specs: card.querySelector('.vehicle-info p').textContent,
+                        price: card.querySelector('.vehicle-info p:last-child').textContent,
+                        category: section.id
+                    });
+                }
             });
             localStorage.setItem('wasabiDealershipVehicles', JSON.stringify(vehicles));
         }
+
 
         // Funzione per caricare i dati dei veicoli dal localStorage
         function loadVehiclesData() {
