@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concessionario Wasabi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #b4ff94;
+            --bg-dark: #2c2c2c;
+            --header-bg-light: #ffffff;
+            --header-bg-dark: #1a1a1a;
+            --text-light: #000000;
+            --text-dark: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .header {
+            background-color: var(--header-bg-light);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .header {
+            background-color: var(--header-bg-dark);
+        }
+
+        .logo {
+            width: 150px;
+            height: 60px;
+        }
+
+        .logo img {
+            max-width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: bold;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            color: var(--text-light);
+            transition: transform 0.3s;
+        }
+
+        .dark-mode .theme-toggle {
+            color: var(--text-dark);
+            transform: rotate(180deg);
+        }
+
+        .vehicle-section {
+            padding: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .vehicle-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 1rem 0;
+            gap: 1rem;
+        }
+
+        .vehicle-card {
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .dark-mode .vehicle-card {
+            background: var(--header-bg-dark);
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .vehicle-info {
+            margin-top: 1rem;
+        }
+
+        .admin-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 999;
+        }
+
+        .admin-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .dark-mode .modal-content {
+            background-color: var(--header-bg-dark);
+            color: var(--text-dark);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            color: black;
+        }
+
+        .dark-mode .form-group input,
+        .dark-mode .form-group select,
+        .dark-mode .form-group textarea {
+            background-color: #333;
+            color: white;
+            border-color: #444;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .btn-cancel {
+            background-color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .brand-name {
+                margin: 1rem 0;
+            }
+
+            .vehicle-card {
+                min-width: 250px;
+            }
+
+            .admin-buttons {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="logo.png" alt="Logo Concessionario">
+        </div>
+        <div class="brand-name">CONCESSIONARIO WASABI</div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i class="fas fa-sun"></i>
+        </button>
+    </header>
+
+    <main>
+        <section class="vehicle-section" id="Berline">
+            <h2 class="category-title">Berline</h2>
+            <div class="vehicle-carousel">
+                
+                <!-- Altri veicoli qui -->
+            </div>
+        </section>
+
+        <section class="vehicle-section" id="Sportive">
+            <h2 class="category-title">Sportive</h2>
+            <div class="vehicle-carousel">
+                <!-- Veicoli sportivi qui -->
+            </div>
+        </section>
+
+        <section class="vehicle-section" id="Suv">
+            <h2 class="category-title">Suv</h2>
+            <div class="vehicle-carousel">
+                <!-- Veicoli sportivi qui -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Admin Buttons -->
+    <div class="admin-buttons">
+        <button class="admin-btn" onclick="showPasswordModal('add')">+</button>
+        <button class="admin-btn delete-btn" onclick="showPasswordModal('delete')">-</button>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h2>Inserisci Password</h2>
+            <div class="form-group">
+                <input type="password" id="adminPassword" placeholder="Password">
+            </div>
+            <button class="btn" onclick="checkPassword()">Conferma</button>
+            <button class="btn btn-cancel" onclick="closeModal('passwordModal')">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Add Vehicle Modal -->
+    <div id="addVehicleModal" class="modal">
+        <div class="modal-content">
+            <h2>Aggiungi Nuovo Veicolo</h2>
+            <div class="form-group">
+                <label>Classe Veicolo</label>
+                <select id="vehicleClass">
+                    <option value="berline">Berline</option>
+                    <option value="sportive">Sportive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nome Veicolo</label>
+                <input type="text" id="vehicleName">
+            </div>
+            <div class="form-group">
+                <label>URL Immagine Discord</label>
+                <input type="text" id="vehicleImageUrl">
+            </div>
+            <div class="form-group">
+                <label>Specifiche</label>
+                <textarea id="vehicleSpecs" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Prezzo</label>
+                <input type="text" id="vehiclePrice">
+            </div>
+            <button class="btn" onclick="addVehicle()">Pubblica</button>
+            <button class="btn btn-cancel" onclick="closeModal('addVehicleModal')">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Delete Vehicle Modal -->
+    <div id="deleteVehicleModal" class="modal">
+        <div class="modal-content">
+            <h2>Elimina Veicolo</h2>
+            <div class="form-group">
+                <label>Seleziona Veicolo da Eliminare</label>
+                <select id="vehicleToDelete"></select>
+            </div>
+            <div class="form-group">
+                <label>Conferma eliminazione digitando il nome completo del veicolo</label>
+                <input type="text" id="deleteConfirmation" placeholder="Nome del veicolo">
+            </div>
+            <button class="btn btn-cancel" onclick="deleteVehicle()">Elimina</button>
+            <button class="btn" onclick="closeModal('deleteVehicleModal')">Annulla</button>
+        </div>
+    </div>
+
+    <script>
+        let currentAction = '';
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const themeToggle = document.querySelector('.theme-toggle i');
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.classList.remove('fa-sun');
+                themeToggle.classList.add('fa-moon');
+            } else {
+                themeToggle.classList.remove('fa-moon');
+                themeToggle.classList.add('fa-sun');
+            }
+        }
+
+        function showPasswordModal(action) {
+            currentAction = action;
+            document.getElementById('passwordModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'passwordModal') {
+                document.getElementById('adminPassword').value = '';
+            }
+            if (modalId === 'deleteVehicleModal') {
+                document.getElementById('deleteConfirmation').value = '';
+            }
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === 'WASABI2024') {
+                closeModal('passwordModal');
+                if (currentAction === 'add') {
+                    document.getElementById('addVehicleModal').style.display = 'block';
+                } else if (currentAction === 'delete') {
+                    populateDeleteDropdown();
+                    document.getElementById('deleteVehicleModal').style.display = 'block';
+                }
+            } else {
+                alert('Password errata. Riprova.');
+            }
+        }
+
+        function addVehicle() {
+            const vehicleClass = document.getElementById('vehicleClass').value;
+            const vehicleName = document.getElementById('vehicleName').value;
+            const vehicleImageUrl = document.getElementById('vehicleImageUrl').value;
+            const vehicleSpecs = document.getElementById('vehicleSpecs').value;
+            const vehiclePrice = document.getElementById('vehiclePrice').value;
+
+            const vehicleCard = document.createElement('div');
+            vehicleCard.className = 'vehicle-card';
+            vehicleCard.setAttribute('data-vehicle-name', vehicleName);
+            vehicleCard.setAttribute('data-image-url', vehicleImageUrl);
+
+            vehicleCard.innerHTML = `
+                <img src="${vehicleImageUrl}" class="vehicle-image" alt="${vehicleName}">
+                <div class="vehicle-info">
+                    <h3>${vehicleName}</h3>
+                    <p>${vehicleSpecs}</p>
+                    <p><strong>Prezzo: €${vehiclePrice}</strong></p>
+                </div>
+            `;
+
+            const section = document.querySelector(`#${vehicleClass} .vehicle-carousel`);
+            section.appendChild(vehicleCard);
+
+            // Reset form
+            document.getElementById('vehicleName').value = '';
+            document.getElementById('vehicleImageUrl').value = '';
+            document.getElementById('vehicleSpecs').value = '';
+            document.getElementById('vehiclePrice').value = '';
+            closeModal('addVehicleModal');
+        }
+
+        function populateDeleteDropdown() {
+            const dropdown = document.getElementById('vehicleToDelete');
+            dropdown.innerHTML = '';
+            const vehicles = document.querySelectorAll('.vehicle-card');
+
+            vehicles.forEach(vehicle => {
+                const vehicleName = vehicle.getAttribute('data-vehicle-name');
+                const option = document.createElement('option');
+                option.value = vehicleName;
+                option.textContent = vehicleName;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function deleteVehicle() {
+            const selectedVehicle = document.getElementById('vehicleToDelete').value;
+            const confirmationInput = document.getElementById('deleteConfirmation').value;
+
+            if (confirmationInput === selectedVehicle) {
+                const vehicleToDelete = document.querySelector(`.vehicle-card[data-vehicle-name="${selectedVehicle}"]`);
+                if (vehicleToDelete) {
+                    vehicleToDelete.remove();
+                    closeModal('deleteVehicleModal');
+                    alert(`Veicolo "${selectedVehicle}" eliminato con successo.`);
+                }
+            } else {
+                alert('Il nome inserito non corrisponde al veicolo selezionato. Riprova.');
+            }
+        }
+
+        // Event listener per chiudere i modal cliccando fuori
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            }
+        }
+
+        // Funzione per validare l'URL di Discord
+        function isValidDiscordUrl(url) {
+            // Verifica se l'URL è un link valido di Discord
+            return url.startsWith('https://cdn.discordapp.com/') ||
+                   url.startsWith('https://media.discordapp.net/');
+        }
+
+        // Aggiunta della validazione dell'URL nell'aggiunta del veicolo
+        function validateVehicleForm() {
+            const imageUrl = document.getElementById('vehicleImageUrl').value;
+            const vehicleName = document.getElementById('vehicleName').value;
+
+            if (!isValidDiscordUrl(imageUrl)) {
+                alert('Per favore inserisci un URL valido di Discord per l\'immagine');
+                return false;
+            }
+
+            if (!vehicleName) {
+                alert('Per favore inserisci il nome del veicolo');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Modifica della funzione addVehicle per includere la validazione
+        document.querySelector('.btn[onclick="addVehicle()"]').onclick = function() {
+            if (!validateVehicleForm()) {
+                return;
+            }
+            addVehicle();
+        };
+
+        // Gestione degli errori di caricamento delle immagini
+        function handleImageError(img) {
+            img.onerror = function() {
+                this.src = 'DISCORD_DEFAULT_IMAGE_URL_HERE'; // URL di un'immagine di fallback
+                console.error('Errore nel caricamento dell\'immagine:', this.src);
+            };
+        }
+
+        // Applicazione del gestore errori a tutte le immagini dei veicoli
+        document.querySelectorAll('.vehicle-image').forEach(img => {
+            handleImageError(img);
+        });
+
+        // Funzione per salvare i dati dei veicoli nel localStorage
+        function saveVehiclesData() {
+            const vehicles = [];
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+                vehicles.push({
+                    name: card.getAttribute('data-vehicle-name'),
+                    imageUrl: card.getAttribute('data-image-url'),
+                    specs: card.querySelector('.vehicle-info p').textContent,
+                    price: card.querySelector('.vehicle-info p:last-child').textContent,
+                    category: card.closest('.vehicle-section').id
+                });
+            });
+            localStorage.setItem('wasabiDealershipVehicles', JSON.stringify(vehicles));
+        }
+
+        // Funzione per caricare i dati dei veicoli dal localStorage
+        function loadVehiclesData() {
+            const savedVehicles = localStorage.getItem('wasabiDealershipVehicles');
+            if (savedVehicles) {
+                const vehicles = JSON.parse(savedVehicles);
+                vehicles.forEach(vehicle => {
+                    const vehicleCard = document.createElement('div');
+                    vehicleCard.className = 'vehicle-card';
+                    vehicleCard.setAttribute('data-vehicle-name', vehicle.name);
+                    vehicleCard.setAttribute('data-image-url', vehicle.imageUrl);
+
+                    vehicleCard.innerHTML = `
+                        <img src="${vehicle.imageUrl}" class="vehicle-image" alt="${vehicle.name}">
+                        <div class="vehicle-info">
+                            <h3>${vehicle.name}</h3>
+                            <p>${vehicle.specs}</p>
+                            <p>${vehicle.price}</p>
+                        </div>
+                    `;
+
+                    const section = document.querySelector(`#${vehicle.category} .vehicle-carousel`);
+                    section.appendChild(vehicleCard);
+                });
+            }
+        }
+
+        // Carica i dati al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', loadVehiclesData);
+
+        // Salva i dati quando vengono fatte modifiche
+        ['addVehicle', 'deleteVehicle'].forEach(action => {
+            const originalFunction = window[action];
+            window[action] = function() {
+                originalFunction.apply(this, arguments);
+                saveVehiclesData();
+            };
+        });
+    </script>
+</body>
+</html>
